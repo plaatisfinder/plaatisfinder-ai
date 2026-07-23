@@ -4,6 +4,11 @@
 # Secrets
 .env
 
-# Python
+# Python cache
 __pycache__/
 *.pyc
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
