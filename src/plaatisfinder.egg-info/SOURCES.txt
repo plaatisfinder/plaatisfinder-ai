@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/plaatisfinder/__init__.py
+src/plaatisfinder/main.py
+src/plaatisfinder.egg-info/PKG-INFO
+src/plaatisfinder.egg-info/SOURCES.txt
+src/plaatisfinder.egg-info/dependency_links.txt
+src/plaatisfinder.egg-info/top_level.txt
+src/plaatisfinder/telegram/notifier.py
