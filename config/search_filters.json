@@ -1,0 +1,15 @@
+{
+  "price": {
+    "min": 25000,
+    "max": 40000
+  },
+  "max_km": 150000,
+  "models": [
+    "Adria Twin",
+    "Pössl",
+    "Globecar",
+    "Knaus BoxStar",
+    "Weinsberg Carabus",
+    "Westfalia Nugget"
+  ]
+}
