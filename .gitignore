@@ -13,3 +13,15 @@ __pycache__/
 build/
 dist/
 data/
+# Downloaded webpages
+*.html
+
+# Environment
+.env
+
+# Database
+data/
+
+# Python
+__pycache__/
+*.pyc
