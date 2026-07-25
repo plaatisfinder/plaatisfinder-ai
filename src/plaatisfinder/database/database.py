@@ -26,6 +26,14 @@ def create_tables():
         )
     """)
 
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS price_history (
+            url TEXT,
+            price INTEGER,
+            seen_at TEXT
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -47,5 +55,42 @@ def save_ad(ad):
         datetime.now().isoformat(),
     ))
 
+    conn.execute("""
+        INSERT INTO price_history
+        VALUES (?, ?, ?)
+    """, (
+        ad.url,
+        ad.price,
+        datetime.now().isoformat(),
+    ))
+
     conn.commit()
     conn.close()
+
+
+def get_latest_price(url):
+    conn = get_connection()
+
+    row = conn.execute("""
+        SELECT price
+        FROM price_history
+        WHERE url = ?
+        ORDER BY seen_at DESC
+        LIMIT 1
+    """, (url,)).fetchone()
+
+    conn.close()
+
+    if row is None:
+        return None
+
+    return row[0]
+
+
+def has_price_changed(ad):
+    latest = get_latest_price(ad.url)
+
+    if latest is None:
+        return False
+
+    return latest != ad.price

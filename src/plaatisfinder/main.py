@@ -3,25 +3,28 @@ from plaatisfinder.database.database import (
     save_ad,
 )
 
-from plaatisfinder.scrapers.mobilede import get_ads
-from plaatisfinder.ai.scoring import score
-from plaatisfinder.ai.explanation import explain
+from plaatisfinder.scrapers.manager import ScraperManager
 from plaatisfinder.ai.scoring import score
 from plaatisfinder.ai.explanation import explain
 
 
 def main():
     create_tables()
+
     print("🚐 PlaatisFinder\n")
 
+    manager = ScraperManager()
+    ads = manager.get_ads()
+
     ads = sorted(
-        get_ads(),
+        ads,
         key=score,
         reverse=True,
     )
 
     for i, ad in enumerate(ads, start=1):
         save_ad(ad)
+
         print("=" * 50)
         print(f"#{i}")
         print(f"🚐 {ad.title}")

@@ -1,7 +1,18 @@
+from plaatisfinder.preferences import get_preferences
 from plaatisfinder.models import CamperAd
 
 
 def get_ads():
+    prefs = get_preferences()
+
+    print("Söker efter:")
+    print(f"🚐 {prefs['brand']} {prefs['model']}")
+    print(f"📅 Min år: {prefs['min_year']}")
+    print(f"💶 Maxpris: {prefs['max_price']} €")
+    print(f"🛣️ Max mil: {prefs['max_mileage']} km")
+    print(f"🏢 Säljare: {prefs['seller_type']}")
+    print()
+
     return [
         CamperAd(
             title="Adria Twin 600 SP",
