@@ -1,16 +1,20 @@
-from plaatisfinder.models import CamperAd
 from plaatisfinder.ai.rules import (
-    mileage_rule,
-    price_rule,
-    year_rule,
+    score_price,
+    score_year,
+    score_mileage,
+    score_seller,
 )
 
 
-def score(ad: CamperAd) -> int:
-    points = 50
+def score(ad):
 
-    points += price_rule(ad)
-    points += mileage_rule(ad)
-    points += year_rule(ad)
+    total = 0
 
-    return min(points, 100)
+    total += score_price(ad)
+    total += score_year(ad)
+    total += score_mileage(ad)
+    total += score_seller(ad)
+
+    ad.ai_score = total
+
+    return total

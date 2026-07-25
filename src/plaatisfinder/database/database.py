@@ -28,14 +28,30 @@ def create_tables():
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS price_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             url TEXT,
             price INTEGER,
-            seen_at TEXT
+            checked_at TEXT
         )
     """)
 
     conn.commit()
     conn.close()
+
+
+def ad_exists(url: str) -> bool:
+    conn = get_connection()
+
+    cursor = conn.execute(
+        "SELECT 1 FROM ads WHERE url = ?",
+        (url,),
+    )
+
+    exists = cursor.fetchone() is not None
+
+    conn.close()
+
+    return exists
 
 
 def save_ad(ad):
@@ -56,7 +72,11 @@ def save_ad(ad):
     ))
 
     conn.execute("""
-        INSERT INTO price_history
+        INSERT INTO price_history (
+            url,
+            price,
+            checked_at
+        )
         VALUES (?, ?, ?)
     """, (
         ad.url,
@@ -68,29 +88,69 @@ def save_ad(ad):
     conn.close()
 
 
-def get_latest_price(url):
+def get_price(url: str):
     conn = get_connection()
 
-    row = conn.execute("""
-        SELECT price
-        FROM price_history
-        WHERE url = ?
-        ORDER BY seen_at DESC
-        LIMIT 1
-    """, (url,)).fetchone()
+    cursor = conn.execute(
+        "SELECT price FROM ads WHERE url = ?",
+        (url,),
+    )
+
+    row = cursor.fetchone()
 
     conn.close()
 
-    if row is None:
-        return None
+    if row:
+        return row[0]
 
-    return row[0]
+    return None
 
 
-def has_price_changed(ad):
-    latest = get_latest_price(ad.url)
+def update_price(ad):
+    conn = get_connection()
 
-    if latest is None:
-        return False
+    conn.execute("""
+        UPDATE ads
+        SET price = ?
+        WHERE url = ?
+    """, (
+        ad.price,
+        ad.url,
+    ))
 
-    return latest != ad.price
+    conn.execute("""
+        INSERT INTO price_history (
+            url,
+            price,
+            checked_at
+        )
+        VALUES (?, ?, ?)
+    """, (
+        ad.url,
+        ad.price,
+        datetime.now().isoformat(),
+    ))
+
+    conn.commit()
+    conn.close()
+
+
+def latest_price(url: str):
+    conn = get_connection()
+
+    cursor = conn.execute("""
+        SELECT price
+        FROM price_history
+        WHERE url = ?
+        ORDER BY id DESC
+        LIMIT 1
+    """, (url,))
+
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row:
+        return row[0]
+
+    return None

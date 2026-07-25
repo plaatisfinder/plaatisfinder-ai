@@ -10,8 +10,8 @@ class CamperAd:
     location: str
     url: str
     source: str
-    seller_type: str = "unknown"
 
-    @property
-    def ad_id(self) -> str:
-        return self.url
+    brand: str = ""
+    seller: str = ""
+
+    ai_score: int = 0

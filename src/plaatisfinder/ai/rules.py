@@ -1,31 +1,51 @@
-from plaatisfinder.models import CamperAd
+from plaatisfinder.preferences import get_preferences
 
 
-def price_rule(ad: CamperAd) -> int:
-    if ad.price <= 38000:
+def score_price(ad):
+    if ad.price <= 35000:
+        return 30
+    elif ad.price <= 45000:
         return 20
+    return 10
 
-    if ad.price <= 40000:
+
+def score_year(ad):
+    if ad.year >= 2022:
+        return 25
+    elif ad.year >= 2019:
+        return 20
+    elif ad.year >= 2017:
         return 10
+    return 0
+
+
+def score_mileage(ad):
+    if ad.mileage == 0:
+        return 10
+
+    if ad.mileage <= 50000:
+        return 20
+    elif ad.mileage <= 100000:
+        return 15
+    elif ad.mileage <= 150000:
+        return 5
 
     return 0
 
 
-def mileage_rule(ad: CamperAd) -> int:
-    if ad.mileage <= 80000:
-        return 20
+def score_seller(ad):
+    prefs = get_preferences()
 
-    if ad.mileage <= 100000:
-        return 10
+    seller = ad.seller.lower()
 
-    return 0
+    if prefs["seller_type"] == "dealer":
+        if "private" not in seller:
+            return 10
+        return 0
 
+    if prefs["seller_type"] == "private":
+        if "private" in seller:
+            return 10
+        return 0
 
-def year_rule(ad: CamperAd) -> int:
-    if ad.year >= 2021:
-        return 20
-
-    if ad.year >= 2019:
-        return 10
-
-    return 0
+    return 5
