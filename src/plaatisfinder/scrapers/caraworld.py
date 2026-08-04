@@ -9,9 +9,16 @@ from plaatisfinder.scrapers.base import BaseScraper
 
 class CaraworldScraper(BaseScraper):
 
-    URL = "https://www.caraworld.de/wohnmobile/fahrzeugzustand/gebrauchtfahrzeug"
+    URL = "https://www.caraworld.de/wohnmobile/fahrzeugzustand/gebrauchtfahrzeug/aufbauart/campervan"
 
-    def get_ads(self):
+    MAX_PAGES = 100
+
+    def get_page(self, page):
+
+        if page == 1:
+            url = self.URL
+        else:
+            url = self.URL + f"/seite-{page}.html"
 
         headers = {
             "User-Agent":
@@ -21,105 +28,174 @@ class CaraworldScraper(BaseScraper):
         }
 
         response = requests.get(
-            self.URL,
+            url,
             headers=headers,
             timeout=30,
         )
 
-        print(f"Caraworld status: {response.status_code}")
+        print(f"Caraworld sida {page}: {response.status_code}")
 
-        soup = BeautifulSoup(response.text, "lxml")
+        return response
+
+    def get_ads(self):
 
         ads = []
 
-        for car in soup.select('div[itemtype="https://schema.org/Car"]'):
+        page = 1
 
-            try:
+        while page <= self.MAX_PAGES:
 
-                title = car.select_one(
-                    "h2[itemprop='name']"
-                ).get_text(strip=True)
+            response = self.get_page(page)
 
-                price = int(
-                    car.select_one(
-                        "meta[itemprop='price']"
-                    )["content"]
-                )
+            if response.status_code != 200:
+                print("Inga fler sidor.")
+                break
 
-                brand = car.select_one(
-                    "meta[itemprop='brand']"
-                )["content"]
+            soup = BeautifulSoup(
+                response.text,
+                "lxml",
+            )
 
-                year = 0
+            cars = soup.select(
+                'div[itemtype="https://schema.org/Car"]'
+            )
 
-                year_tag = car.select_one(
-                    "meta[itemprop='vehicleModelDate']"
-                )
+            if not cars:
+                print("Inga fler annonser.")
+                break
 
-                if year_tag:
-                    year = int(year_tag["content"])
+            print(f"Sida {page}: {len(cars)} annonser")
 
-                mileage = 0
+            for car in cars:
 
-                for info in car.select(".cd-outerspace-bottom-small"):
+                try:
 
-                    label = info.select_one(
-                        ".cd-wrapper-suchergebnis-info"
+                    title = car.select_one(
+                        "h2[itemprop='name']"
+                    ).get_text(strip=True)
+
+                    price = int(
+                        car.select_one(
+                            "meta[itemprop='price']"
+                        )["content"]
                     )
 
-                    value = info.select_one(
-                        ".cd-wrapper-suchergebnis-info-zeile"
+                    brand = ""
+
+                    brand_tag = car.select_one(
+                        "meta[itemprop='brand']"
                     )
 
-                    if not label or not value:
-                        continue
+                    if brand_tag:
+                        brand = brand_tag["content"]
 
-                    if "KM-Stand" in label.text:
+                    year = 0
 
-                        mileage = int(
-                            re.sub(
+                    year_tag = car.select_one(
+                        "meta[itemprop='vehicleModelDate']"
+                    )
+
+                    if year_tag:
+                        year = int(year_tag["content"])
+
+                    mileage = 0
+
+                    for info in car.select(".cd-outerspace-bottom-small"):
+
+                        label = info.select_one(
+                            ".cd-wrapper-suchergebnis-info"
+                        )
+
+                        value = info.select_one(
+                            ".cd-wrapper-suchergebnis-info-zeile"
+                        )
+
+                        if not label or not value:
+                            continue
+
+                        if "KM-Stand" in label.text:
+
+                            digits = re.sub(
                                 r"\D",
                                 "",
                                 value.text,
                             )
+
+                            if digits:
+                                mileage = int(digits)
+
+                    url = ""
+
+                    link = car.select_one("a.cw-fzg-link")
+
+                    if link:
+
+                        href = link["href"]
+
+                        if href.startswith("/"):
+                            url = "https://www.caraworld.de" + href
+                        else:
+                            url = href
+
+                    dealer = ""
+
+                    strong = car.select_one("strong")
+
+                    if strong:
+                        dealer = strong.get_text(strip=True)
+
+                    image_url = ""
+
+                    source = car.select_one("picture source")
+
+                    if source:
+                        image_url = source.get("data-srcset", "")
+
+                    vehicle_type = "motorhome"
+
+                    text = f"{brand} {title}".lower()
+
+                    campervan_keywords = [
+                        "twin",
+                        "roadcruiser",
+                        "summit",
+                        "carabus",
+                        "2 win",
+                        "2win",
+                        "duo",
+                        "duett",
+                        "campster",
+                        "campervan",
+                        "kastenwagen",
+                    ]
+
+                    if any(
+                        keyword in text
+                        for keyword in campervan_keywords
+                    ):
+                        vehicle_type = "campervan"
+
+                    ads.append(
+                        CamperAd(
+                            title=title,
+                            price=price,
+                            mileage=mileage,
+                            year=year,
+                            location="Germany",
+                            url=url,
+                            source="Caraworld",
+                            brand=brand,
+                            seller=dealer,
+                            image_url=image_url,
+                            vehicle_type=vehicle_type,
                         )
-
-                link = car.select_one("a.cw-fzg-link")
-
-                url = ""
-
-                if link:
-
-                    href = link["href"]
-
-                    if href.startswith("/"):
-                        url = "https://www.caraworld.de" + href
-                    else:
-                        url = href
-
-                dealer = ""
-
-                strong = car.select_one("strong")
-
-                if strong:
-                    dealer = strong.get_text(strip=True)
-
-                ads.append(
-                    CamperAd(
-                        title=title,
-                        price=price,
-                        mileage=mileage,
-                        year=year,
-                        location="Germany",
-                        url=url,
-                        source="Caraworld",
-                        brand=brand,
-                        seller=dealer,
                     )
-                )
 
-            except Exception:
-                continue
+                except Exception as e:
+                    print("Fel:", e)
+                    continue
+
+            page += 1
 
         print(f"Hämtade {len(ads)} annonser från Caraworld")
 

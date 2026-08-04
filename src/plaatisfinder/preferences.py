@@ -2,7 +2,7 @@ def get_preferences():
 
     return {
 
-        # Favoritmärken (i prioriterad ordning)
+        # Märken du är intresserad av
         "brands": [
             "Adria",
             "Pössl",
@@ -11,19 +11,15 @@ def get_preferences():
             "Knaus",
         ],
 
-        # Favoritmodeller
-        "models": [
-            "Twin",
-            "Roadcruiser",
-            "Summit",
-            "Carabus",
-        ],
+        # Lämna tom = alla modeller från ovanstående märken.
+        # AI kommer senare att ge extra poäng till favoritmodeller.
+        "models": [],
 
         # Pris
         "max_price": 45000,
 
         # Årsmodell
-        "min_year": 2019,
+        "min_year": 2015,
 
         # Körsträcka
         "max_mileage": 100000,

@@ -1,0 +1,937 @@
+/* ---------- Grund ---------- */
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+
+    margin:0;
+
+    background:#f4f6f9;
+
+    color:#1f2937;
+
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
+}
+
+.page{
+
+    max-width:1600px;
+
+    margin:auto;
+
+    padding:30px;
+
+}
+
+
+/* ---------- Header ---------- */
+
+.hero{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:35px;
+
+}
+
+.hero h1{
+
+    margin:0;
+
+    font-size:42px;
+
+    font-weight:700;
+
+}
+
+.subtitle{
+
+    margin-top:8px;
+
+    color:#6b7280;
+
+    font-size:18px;
+
+}
+
+
+/* ---------- Statistik ---------- */
+
+.stats{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+
+    gap:20px;
+
+    margin-bottom:35px;
+
+}
+
+.stat-card{
+
+    background:#fff;
+
+    border-radius:16px;
+
+    padding:24px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+
+    transition:.2s;
+
+}
+
+.stat-card:hover{
+
+    transform:translateY(-4px);
+
+}
+
+.stat-value{
+
+    display:block;
+
+    font-size:36px;
+
+    font-weight:700;
+
+}
+
+.stat-label{
+
+    color:#6b7280;
+
+}
+
+
+/* ---------- Layout ---------- */
+
+.layout{
+
+    display:grid;
+
+    grid-template-columns:320px 1fr;
+
+    gap:30px;
+
+    align-items:start;
+
+}
+
+/* ---------- Filterpanel ---------- */
+
+.sidebar{
+
+    position:sticky;
+
+    top:20px;
+
+}
+
+.filter-panel{
+
+    background:#fff;
+
+    border-radius:16px;
+
+    padding:24px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+
+}
+
+.filter-panel h2{
+
+    margin:0 0 20px 0;
+
+    font-size:22px;
+
+}
+
+.filter-group{
+
+    margin-bottom:24px;
+
+}
+
+.filter-group strong{
+
+    display:block;
+
+    margin-bottom:10px;
+
+    font-size:15px;
+
+    color:#374151;
+
+}
+
+.filter-group select{
+
+    width:100%;
+
+    padding:10px 12px;
+
+    margin-bottom:10px;
+
+    border:1px solid #d1d5db;
+
+    border-radius:10px;
+
+    background:white;
+
+    font-size:14px;
+
+}
+
+.brand-item{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:6px 0;
+
+    font-size:14px;
+
+}
+
+.brand-item input{
+
+    margin-right:10px;
+
+}
+
+.favorite-filter{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-weight:600;
+
+    margin-top:10px;
+
+}
+
+
+/* ---------- Resultat ---------- */
+
+.results-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.results-header h2{
+
+    margin:0;
+
+    font-size:28px;
+
+}
+
+
+/* ---------- Grid ---------- */
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+
+    gap:24px;
+
+}
+
+/* ---------- Annonskort ---------- */
+
+.listing-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    transition:.25s ease;
+
+}
+
+.listing-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 18px 40px rgba(0,0,0,.15);
+
+}
+
+
+/* ---------- Bild ---------- */
+
+.listing-image{
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.photo{
+
+    width:100%;
+
+    height:230px;
+
+    object-fit:cover;
+
+    display:block;
+
+    transition:transform .35s ease;
+
+}
+
+.listing-card:hover .photo{
+
+    transform:scale(1.04);
+
+}
+
+.no-photo{
+
+    height:230px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:#e5e7eb;
+
+    font-size:70px;
+
+}
+
+
+/* ---------- AI badge ---------- */
+
+.score{
+
+    position:absolute;
+
+    top:14px;
+
+    right:14px;
+
+    padding:8px 14px;
+
+    border-radius:999px;
+
+    color:white;
+
+    font-weight:700;
+
+    font-size:14px;
+
+    box-shadow:0 4px 14px rgba(0,0,0,.30);
+
+}
+
+.green{
+
+    background:#16a34a;
+
+}
+
+.yellow{
+
+    background:#f59e0b;
+
+}
+
+.red{
+
+    background:#dc2626;
+
+}
+
+
+/* ---------- Innehåll ---------- */
+
+.listing-content{
+
+    padding:22px;
+
+    flex:1;
+
+}
+
+.listing-title{
+
+    margin:0;
+
+    font-size:22px;
+
+    line-height:1.3;
+
+    min-height:58px;
+
+}
+
+.listing-price{
+
+    margin-top:18px;
+
+    font-size:34px;
+
+    font-weight:700;
+
+    color:#111827;
+
+}
+
+.listing-meta{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-top:18px;
+
+    color:#6b7280;
+
+    font-size:15px;
+
+}
+
+.listing-source{
+
+    margin-top:14px;
+
+    color:#6b7280;
+
+    font-size:15px;
+
+}
+
+
+/* ---------- Prisändringar ---------- */
+
+.price-down{
+
+    display:inline-block;
+
+    margin-top:14px;
+
+    padding:6px 10px;
+
+    border-radius:999px;
+
+    background:#dcfce7;
+
+    color:#166534;
+
+    font-weight:700;
+
+}
+
+.price-up{
+
+    display:inline-block;
+
+    margin-top:14px;
+
+    padding:6px 10px;
+
+    border-radius:999px;
+
+    background:#fee2e2;
+
+    color:#991b1b;
+
+    font-weight:700;
+
+}
+
+
+/* ---------- Knappar ---------- */
+
+.listing-actions{
+
+    display:flex;
+
+    gap:12px;
+
+    padding:20px;
+
+    border-top:1px solid #eef2f7;
+
+}
+
+.favorite{
+
+    width:54px;
+
+    height:54px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:12px;
+
+    background:#f3f4f6;
+
+    text-decoration:none;
+
+    font-size:24px;
+
+    transition:.2s;
+
+}
+
+.favorite:hover{
+
+    background:#ffe4e6;
+
+}
+
+.button{
+
+    flex:1;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-decoration:none;
+
+    background:#2563eb;
+
+    color:white;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    transition:.2s;
+
+}
+
+.button:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+.button.secondary{
+
+    background:#eef2ff;
+
+    color:#1e3a8a;
+
+}
+
+.button.secondary:hover{
+
+    background:#dbeafe;
+
+}
+
+/* ---------- Formulär ---------- */
+
+select,
+input[type="text"],
+input[type="number"]{
+
+    font:inherit;
+
+}
+
+select:focus,
+input:focus{
+
+    outline:none;
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+
+}
+
+
+/* ---------- Scrollbar ---------- */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#eef2f7;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#cbd5e1;
+
+    border-radius:999px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#94a3b8;
+
+}
+
+
+/* ---------- Länkar ---------- */
+
+a{
+
+    color:inherit;
+
+}
+
+
+/* ---------- Små animationer ---------- */
+
+.stat-card,
+.filter-panel,
+.listing-card{
+
+    animation:fadeIn .35s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(12px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/* ---------- Mobil ---------- */
+
+@media (max-width:1100px){
+
+    .layout{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .sidebar{
+
+        position:static;
+
+    }
+
+}
+
+
+@media (max-width:700px){
+
+    .page{
+
+        padding:16px;
+
+    }
+
+    .hero{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:10px;
+
+    }
+
+    .hero h1{
+
+        font-size:34px;
+
+    }
+
+    .stats{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .listing-meta{
+
+        flex-direction:column;
+
+        gap:6px;
+
+    }
+
+    .listing-actions{
+
+        flex-wrap:wrap;
+
+    }
+
+    .favorite{
+
+        width:100%;
+
+        height:48px;
+
+    }
+
+    .button{
+
+        min-height:48px;
+
+    }
+
+}
+
+
+/* ---------- Mörkt läge (automatiskt) ---------- */
+
+@media (prefers-color-scheme:dark){
+
+    body{
+
+        background:#111827;
+
+        color:#f3f4f6;
+
+    }
+
+    .filter-panel,
+    .listing-card,
+    .stat-card{
+
+        background:#1f2937;
+
+        color:#f3f4f6;
+
+    }
+
+    .listing-price{
+
+        color:white;
+
+    }
+
+    .subtitle,
+    .listing-meta,
+    .listing-source,
+    .stat-label{
+
+        color:#cbd5e1;
+
+    }
+
+    .button.secondary{
+
+        background:#374151;
+
+        color:white;
+
+    }
+
+}
+
+.days-online{
+
+    color:#2563eb;
+
+    font-weight:600;
+
+}
+
+.new-badge{
+
+    color:#16a34a;
+
+    font-weight:700;
+
+}
+
+/* ---------- Dashboard ---------- */
+
+.dashboard{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+}
+
+.dashboard-card{
+
+    background:white;
+
+    padding:24px;
+
+    border-radius:16px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+
+}
+
+.dashboard-card h3{
+
+    margin-top:0;
+
+    margin-bottom:12px;
+
+    font-size:20px;
+
+}
+
+.dashboard-card p{
+
+    margin:0;
+
+    font-size:32px;
+
+    font-weight:bold;
+
+}
+
+/* ---------- Top Menu ---------- */
+
+.top-nav{
+
+    display:flex;
+
+    gap:16px;
+
+    align-items:center;
+
+    padding:16px 28px;
+
+    background:white;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+
+    margin-bottom:30px;
+
+}
+
+.top-nav a{
+
+    text-decoration:none;
+
+    color:#222;
+
+    font-weight:600;
+
+    padding:10px 18px;
+
+    border-radius:10px;
+
+    transition:.2s;
+
+}
+
+.top-nav a:hover{
+
+    background:#1976d2;
+
+    color:white;
+
+}
+
+form{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+    max-width:500px;
+
+}
+
+form label{
+
+    display:flex;
+
+    flex-direction:column;
+
+    font-weight:600;
+
+}
+
+form input{
+
+    margin-top:8px;
+
+    padding:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+}

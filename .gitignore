@@ -25,3 +25,31 @@ data/
 # Python
 __pycache__/
 *.pyc
+
+# Virtual environment
+.venv/
+
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
+
+# Local database
+data/
+
+# Downloaded webpages
+*.html
+
+# Temporary test scripts
+test_*.py
+
+# IDE
+.vscode/
+.idea/

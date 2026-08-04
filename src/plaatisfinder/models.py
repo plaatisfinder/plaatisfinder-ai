@@ -14,4 +14,8 @@ class CamperAd:
     brand: str = ""
     seller: str = ""
 
+    image_url: str = ""
+
+    vehicle_type: str = "unknown"
+
     ai_score: int = 0
