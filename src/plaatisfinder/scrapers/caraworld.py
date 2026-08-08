@@ -5,13 +5,28 @@ from bs4 import BeautifulSoup
 
 from plaatisfinder.models import CamperAd
 from plaatisfinder.scrapers.base import BaseScraper
+from plaatisfinder.utils.engine_parser import parse_engine_info
 
 
 class CaraworldScraper(BaseScraper):
 
-    URL = "https://www.caraworld.de/wohnmobile/fahrzeugzustand/gebrauchtfahrzeug/aufbauart/campervan"
+    URL = (
+        "https://www.caraworld.de/wohnmobile/"
+        "fahrzeugzustand/gebrauchtfahrzeug/"
+        "aufbauart/campervan"
+    )
 
-    MAX_PAGES = 100
+    # Tillfälligt 1 sida under test.
+    # Ändra tillbaka till 100 när allt fungerar.
+    MAX_PAGES = 1
+
+    HEADERS = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 "
+            "Chrome/138.0 Safari/537.36"
+        )
+    }
 
     def get_page(self, page):
 
@@ -20,22 +35,64 @@ class CaraworldScraper(BaseScraper):
         else:
             url = self.URL + f"/seite-{page}.html"
 
-        headers = {
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 "
-                "Chrome/138.0 Safari/537.36"
-        }
-
         response = requests.get(
             url,
-            headers=headers,
+            headers=self.HEADERS,
             timeout=30,
         )
 
-        print(f"Caraworld sida {page}: {response.status_code}")
+        print(
+            f"Caraworld sida {page}: "
+            f"{response.status_code}"
+        )
 
         return response
+
+    def get_detail_info(self, url, year=0):
+
+        if not url:
+            return {}
+
+        try:
+
+            response = requests.get(
+                url,
+                headers=self.HEADERS,
+                timeout=30,
+            )
+
+            if response.status_code != 200:
+
+                print(
+                    f"Detaljsida misslyckades: "
+                    f"{response.status_code}"
+                )
+
+                return {}
+
+            soup = BeautifulSoup(
+                response.text,
+                "lxml",
+            )
+
+            text = soup.get_text(
+                " ",
+                strip=True,
+            )
+
+            return parse_engine_info(
+                text,
+                year=year,
+            )
+
+        except Exception as e:
+
+            print(
+                "Fel vid hämtning av detaljsida:",
+                e,
+            )
+
+            return {}
 
     def get_ads(self):
 
@@ -48,7 +105,9 @@ class CaraworldScraper(BaseScraper):
             response = self.get_page(page)
 
             if response.status_code != 200:
+
                 print("Inga fler sidor.")
+
                 break
 
             soup = BeautifulSoup(
@@ -61,24 +120,53 @@ class CaraworldScraper(BaseScraper):
             )
 
             if not cars:
+
                 print("Inga fler annonser.")
+
                 break
 
-            print(f"Sida {page}: {len(cars)} annonser")
+            print(
+                f"Sida {page}: "
+                f"{len(cars)} annonser"
+            )
 
             for car in cars:
 
                 try:
 
-                    title = car.select_one(
+                    # --------------------------------
+                    # TITEL
+                    # --------------------------------
+
+                    title_tag = car.select_one(
                         "h2[itemprop='name']"
-                    ).get_text(strip=True)
+                    )
+
+                    if not title_tag:
+                        continue
+
+                    title = title_tag.get_text(
+                        strip=True
+                    )
+
+                    # --------------------------------
+                    # PRIS
+                    # --------------------------------
+
+                    price_tag = car.select_one(
+                        "meta[itemprop='price']"
+                    )
+
+                    if not price_tag:
+                        continue
 
                     price = int(
-                        car.select_one(
-                            "meta[itemprop='price']"
-                        )["content"]
+                        price_tag["content"]
                     )
+
+                    # --------------------------------
+                    # MÄRKE
+                    # --------------------------------
 
                     brand = ""
 
@@ -87,7 +175,15 @@ class CaraworldScraper(BaseScraper):
                     )
 
                     if brand_tag:
-                        brand = brand_tag["content"]
+
+                        brand = brand_tag.get(
+                            "content",
+                            "",
+                        )
+
+                    # --------------------------------
+                    # ÅR
+                    # --------------------------------
 
                     year = 0
 
@@ -96,11 +192,29 @@ class CaraworldScraper(BaseScraper):
                     )
 
                     if year_tag:
-                        year = int(year_tag["content"])
+
+                        try:
+
+                            year = int(
+                                year_tag["content"]
+                            )
+
+                        except (
+                            ValueError,
+                            TypeError,
+                        ):
+
+                            year = 0
+
+                    # --------------------------------
+                    # MILTAL
+                    # --------------------------------
 
                     mileage = 0
 
-                    for info in car.select(".cd-outerspace-bottom-small"):
+                    for info in car.select(
+                        ".cd-outerspace-bottom-small"
+                    ):
 
                         label = info.select_one(
                             ".cd-wrapper-suchergebnis-info"
@@ -122,38 +236,95 @@ class CaraworldScraper(BaseScraper):
                             )
 
                             if digits:
-                                mileage = int(digits)
+
+                                mileage = int(
+                                    digits
+                                )
+
+                    # --------------------------------
+                    # URL
+                    # --------------------------------
 
                     url = ""
 
-                    link = car.select_one("a.cw-fzg-link")
+                    link = car.select_one(
+                        "a.cw-fzg-link"
+                    )
 
                     if link:
 
-                        href = link["href"]
+                        href = link.get(
+                            "href",
+                            "",
+                        )
 
                         if href.startswith("/"):
-                            url = "https://www.caraworld.de" + href
+                            url = (
+                                "https://www.caraworld.de"
+                                + href
+                            )
+
                         else:
                             url = href
 
+                    # --------------------------------
+                    # DETALJSIDA / MOTORINFO
+                    # --------------------------------
+
+                    engine_info = (
+                        self.get_detail_info(
+                            url,
+                            year=year,
+                        )
+                    )
+
+                    print(
+                        "Motorinfo:",
+                        engine_info,
+                    )
+
+                    # --------------------------------
+                    # SÄLJARE
+                    # --------------------------------
+
                     dealer = ""
 
-                    strong = car.select_one("strong")
+                    strong = car.select_one(
+                        "strong"
+                    )
 
                     if strong:
-                        dealer = strong.get_text(strip=True)
+
+                        dealer = strong.get_text(
+                            strip=True
+                        )
+
+                    # --------------------------------
+                    # BILD
+                    # --------------------------------
 
                     image_url = ""
 
-                    source = car.select_one("picture source")
+                    source = car.select_one(
+                        "picture source"
+                    )
 
                     if source:
-                        image_url = source.get("data-srcset", "")
+
+                        image_url = source.get(
+                            "data-srcset",
+                            "",
+                        )
+
+                    # --------------------------------
+                    # FORDONSTYP
+                    # --------------------------------
 
                     vehicle_type = "motorhome"
 
-                    text = f"{brand} {title}".lower()
+                    listing_text = (
+                        f"{brand} {title}"
+                    ).lower()
 
                     campervan_keywords = [
                         "twin",
@@ -170,10 +341,16 @@ class CaraworldScraper(BaseScraper):
                     ]
 
                     if any(
-                        keyword in text
-                        for keyword in campervan_keywords
+                        keyword in listing_text
+                        for keyword
+                        in campervan_keywords
                     ):
+
                         vehicle_type = "campervan"
+
+                    # --------------------------------
+                    # ANNONS
+                    # --------------------------------
 
                     ads.append(
                         CamperAd(
@@ -188,15 +365,60 @@ class CaraworldScraper(BaseScraper):
                             seller=dealer,
                             image_url=image_url,
                             vehicle_type=vehicle_type,
+
+                            base_vehicle=engine_info.get(
+                                "base_vehicle",
+                                "",
+                            ),
+
+                            engine_size=engine_info.get(
+                                "engine_size",
+                                0.0,
+                            ),
+
+                            engine_power=engine_info.get(
+                                "engine_power",
+                                0,
+                            ),
+
+                            engine_model=engine_info.get(
+                                "engine_model",
+                                "",
+                            ),
+
+                            euro_class=engine_info.get(
+                                "euro_class",
+                                "",
+                            ),
+
+                            adblue=engine_info.get(
+                                "adblue",
+                                None,
+                            ),
+
+                            adblue_confidence=(
+                                engine_info.get(
+                                    "adblue_confidence",
+                                    "unknown",
+                                )
+                            ),
                         )
                     )
 
                 except Exception as e:
-                    print("Fel:", e)
+
+                    print(
+                        "Fel:",
+                        e,
+                    )
+
                     continue
 
             page += 1
 
-        print(f"Hämtade {len(ads)} annonser från Caraworld")
+        print(
+            f"Hämtade {len(ads)} "
+            f"annonser från Caraworld"
+        )
 
         return ads

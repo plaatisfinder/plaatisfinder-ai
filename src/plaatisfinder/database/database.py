@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime
 
+
 DB_PATH = Path("data/database.db")
 
 
@@ -15,9 +16,39 @@ def get_connection():
     return conn
 
 
+def _add_column_if_missing(
+    conn,
+    table,
+    column,
+    definition,
+):
+
+    columns = conn.execute(
+        f"PRAGMA table_info({table})"
+    ).fetchall()
+
+    existing = {
+        row["name"]
+        for row in columns
+    }
+
+    if column not in existing:
+
+        conn.execute(
+            f"""
+            ALTER TABLE {table}
+            ADD COLUMN {column} {definition}
+            """
+        )
+
+
 def create_tables():
 
     conn = get_connection()
+
+    # --------------------------------------------------
+    # ADS
+    # --------------------------------------------------
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS ads (
@@ -48,10 +79,81 @@ def create_tables():
 
             active INTEGER DEFAULT 1,
 
-            favorite INTEGER DEFAULT 0
+            favorite INTEGER DEFAULT 0,
+
+            base_vehicle TEXT DEFAULT '',
+
+            engine_size REAL DEFAULT 0,
+
+            engine_power INTEGER DEFAULT 0,
+
+            engine_model TEXT DEFAULT '',
+
+            euro_class TEXT DEFAULT '',
+
+            adblue INTEGER,
+
+            adblue_confidence TEXT DEFAULT 'unknown'
 
         )
     """)
+
+    # --------------------------------------------------
+    # MIGRATION FÖR BEFINTLIG DATABAS
+    # --------------------------------------------------
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "base_vehicle",
+        "TEXT DEFAULT ''",
+    )
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "engine_size",
+        "REAL DEFAULT 0",
+    )
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "engine_power",
+        "INTEGER DEFAULT 0",
+    )
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "engine_model",
+        "TEXT DEFAULT ''",
+    )
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "euro_class",
+        "TEXT DEFAULT ''",
+    )
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "adblue",
+        "INTEGER",
+    )
+
+    _add_column_if_missing(
+        conn,
+        "ads",
+        "adblue_confidence",
+        "TEXT DEFAULT 'unknown'",
+    )
+
+    # --------------------------------------------------
+    # PRICE HISTORY
+    # --------------------------------------------------
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS price_history (
@@ -66,6 +168,10 @@ def create_tables():
 
         )
     """)
+
+    # --------------------------------------------------
+    # WATCHES
+    # --------------------------------------------------
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS watches (
@@ -124,11 +230,41 @@ def save_ad(ad):
             ai_score,
             active,
             first_seen,
-            last_seen
+            last_seen,
+
+            base_vehicle,
+            engine_size,
+            engine_power,
+            engine_model,
+            euro_class,
+            adblue,
+            adblue_confidence
         )
 
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)   
-          """, (
+        VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
+    """, (
 
         ad.url,
         ad.title,
@@ -143,6 +279,14 @@ def save_ad(ad):
         1,
         now,
         now,
+
+        ad.base_vehicle,
+        ad.engine_size,
+        ad.engine_power,
+        ad.engine_model,
+        ad.euro_class,
+        ad.adblue,
+        ad.adblue_confidence,
 
     ))
 
@@ -180,9 +324,19 @@ def update_price(ad):
 
             brand=?,
             price=?,
+            mileage=?,
+            year=?,
             image_url=?,
             ai_score=?,
-            last_seen=?
+            last_seen=?,
+
+            base_vehicle=?,
+            engine_size=?,
+            engine_power=?,
+            engine_model=?,
+            euro_class=?,
+            adblue=?,
+            adblue_confidence=?
 
         WHERE url=?
 
@@ -190,9 +344,20 @@ def update_price(ad):
 
         ad.brand,
         ad.price,
+        ad.mileage,
+        ad.year,
         ad.image_url,
         ad.ai_score,
         now,
+
+        ad.base_vehicle,
+        ad.engine_size,
+        ad.engine_power,
+        ad.engine_model,
+        ad.euro_class,
+        ad.adblue,
+        ad.adblue_confidence,
+
         ad.url,
 
     ))
@@ -217,6 +382,7 @@ def update_price(ad):
     conn.commit()
     conn.close()
 
+
 def get_previous_price(url):
 
     conn = get_connection()
@@ -231,10 +397,9 @@ def get_previous_price(url):
         ORDER BY checked_at DESC
 
         LIMIT 1 OFFSET 1
+
     """, (
-
         url,
-
     )).fetchone()
 
     conn.close()
@@ -243,6 +408,7 @@ def get_previous_price(url):
         return row["price"]
 
     return None
+
 
 def update_last_seen(url):
 
@@ -254,6 +420,7 @@ def update_last_seen(url):
         SET last_seen=?
 
         WHERE url=?
+
     """, (
 
         datetime.now().isoformat(),
@@ -296,10 +463,9 @@ def latest_price(url):
         ORDER BY id DESC
 
         LIMIT 1
+
     """, (
-
         url,
-
     )).fetchone()
 
     conn.close()
@@ -327,6 +493,7 @@ def get_ad(url):
 
     return ad
 
+
 def get_price_history(url):
 
     conn = get_connection()
@@ -350,16 +517,14 @@ def get_price_history(url):
 
     return history
 
+
 def mark_all_inactive():
 
     conn = get_connection()
 
     conn.execute("""
-
         UPDATE ads
-
         SET active=0
-
     """)
 
     conn.commit()
@@ -371,7 +536,6 @@ def mark_active(url):
     conn = get_connection()
 
     conn.execute("""
-
         UPDATE ads
 
         SET
@@ -397,7 +561,6 @@ def get_active_ads():
     conn = get_connection()
 
     ads = conn.execute("""
-
         SELECT *
 
         FROM ads
@@ -411,6 +574,7 @@ def get_active_ads():
     conn.close()
 
     return ads
+
 
 def set_favorite(url, favorite):
 
@@ -456,29 +620,25 @@ def is_favorite(url):
 
     return False
 
-def add_watch(
 
+def add_watch(
     brand,
     min_ai,
     max_price,
     min_year,
     max_mileage,
-
 ):
 
     conn = get_connection()
 
     conn.execute("""
-
         INSERT INTO watches
         (
-
             brand,
             min_ai,
             max_price,
             min_year,
             max_mileage
-
         )
 
         VALUES (?,?,?,?,?)
@@ -496,20 +656,20 @@ def add_watch(
     conn.commit()
     conn.close()
 
-    def get_watches():
 
-        conn = get_connection()
+def get_watches():
 
-        watches = conn.execute("""
+    conn = get_connection()
 
-            SELECT *
+    watches = conn.execute("""
+        SELECT *
 
-            FROM watches
+        FROM watches
 
-            ORDER BY id
+        ORDER BY id
 
-        """).fetchall()
+    """).fetchall()
 
-        conn.close()
+    conn.close()
 
-        return watches
+    return watches

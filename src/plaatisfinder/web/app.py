@@ -1,3 +1,8 @@
+from plaatisfinder.ai.valuation import (
+    analyze_ad,
+    find_similar_ads,
+)
+
 import sqlite3
 
 from flask import Flask
@@ -295,6 +300,9 @@ def ad_details(url):
 
     ad = dict(ad)
 
+    valuation = analyze_ad(ad)
+    similar_ads = find_similar_ads(ad)[:12]
+
     ad["days_online"] = days_online(ad["first_seen"])
 
     return render_template(
@@ -303,6 +311,8 @@ def ad_details(url):
         history=history,
         labels=labels,
         prices=prices,
+        valuation=valuation,
+        similar_ads=similar_ads,
     )
 
 if __name__ == "__main__":
