@@ -293,6 +293,8 @@ def ad_details(url):
     print("labels:", labels)
     print("prices:", prices)
 
+    ad = dict(ad)
+
     ad["days_online"] = days_online(ad["first_seen"])
 
     return render_template(
